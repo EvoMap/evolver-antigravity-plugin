@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "gep": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@evomap/gep-mcp-server"
+      ],
+      "env": {
+        "EVOMAP_HUB_URL": "",
+        "EVOMAP_API_KEY": ""
+      }
+    }
+  }
+}

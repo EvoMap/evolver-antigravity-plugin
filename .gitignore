@@ -1,0 +1,15 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local state and logs
+.evolver/logs/
+.evolver/session-start-state.json
+session-start-state.json
+*.log
+
+# System files
+.DS_Store
+Thumbs.db

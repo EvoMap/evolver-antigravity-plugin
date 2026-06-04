@@ -1,0 +1,66 @@
+---
+name: capability-evolver
+description: Self-evolution workflow for the agent. Before a substantive task, recall what worked on similar past tasks from evolution memory; after it, record the outcome so future sessions learn from it. Use when the user starts non-trivial work (a feature, a fix, a refactor) or asks the agent to "evolve", "learn from this", or "remember how this went".
+---
+
+# Capability Evolver
+
+This plugin gives the agent a **persistent, auditable evolution memory** built on the Genome Evolution Protocol (GEP). The goal is simple: stop re-solving the same problem from scratch. Past outcomes — what worked, what failed — are carried forward into future sessions.
+
+## How it works (automatic)
+
+Three hooks run on their own; you don't invoke them:
+
+- **`SessionStart`** — injects a short summary of recent **successful** outcomes for *this workspace* (filtered to score ≥ 0.5, < 7 days old, max 3) as context. The agent sees "here's what worked recently" before it starts.
+- **`PostToolUse`** (write_to_file / replace_file_content) — scans edits for improvement signals (`log_error`, `perf_bottleneck`, `capability_gap`, `test_failure`, …) and nudges the agent to record the outcome when relevant.
+- **`Stop`** — at the end of a task, collects the git diff, classifies the outcome, and appends it to the evolution memory graph (scoped to the workspace so other projects' memory never leaks in).
+
+Memory is written to a local JSONL graph. With no extra setup it lands in `~/.evolver/memory/evolution/memory_graph.jsonl`; inside an evolver-managed project it lands under that project's `memory/evolution/`.
+
+## What you (the agent) should do
+
+For any **substantive** task — a feature, a non-trivial fix, a refactor:
+
+1. **Before starting**, check the injected evolution memory (it arrives as session-start context). If a recent successful outcome matches the task, reuse that approach. If a recent *failure* matches, avoid repeating it.
+2. **Do the work.**
+3. **After finishing**, the `Stop` hook records the outcome automatically. You don't need to call anything — but if the task had a clear lesson worth a one-line note, say so in your final message so it's captured in the diff context the hook reads.
+
+Trivial or purely conversational turns don't need this — skip it.
+
+## Signals
+
+The hooks classify work by signal. Knowing the vocabulary helps you describe outcomes in terms the memory graph indexes well:
+
+| Signal | Fires on |
+|---|---|
+| `log_error` | errors, exceptions, failures in the diff |
+| `perf_bottleneck` | timeout / slow / latency / OOM |
+| `capability_gap` | "not supported" / "not implemented" |
+| `user_feature_request` | adding a feature / new module |
+| `test_failure` | failing tests / assertions |
+| `deployment_issue` | build / CI / pipeline / rollback |
+
+## Full pipeline (optional)
+
+The bundled hooks record outcomes and recall them — that works on its own. To get the **full evolution engine** (automated log analysis, the review-and-solidify cycle that proposes and applies code improvements), install it:
+
+```bash
+npm install -g @evomap/evolver
+```
+
+This gives you the engine's CLI (e.g. `evolver run`) to run that pipeline separately — the hooks do not auto-detect or invoke it. The memory the hooks record is what the pipeline consumes. See the plugin README for connecting an EvoMap Hub node for community strategies.
+
+## Built-in MCP Tools (Zero-Config)
+
+Unlike Claude Code, this Antigravity plugin natively configures and loads the GEP MCP Server via `mcp_config.json`. When this plugin is active, you will find several high-powered `gep_*` tools available directly in your tool list.
+
+You should proactively use these MCP tools in your workflow:
+
+| MCP Tool | Purpose / Action |
+|---|---|
+| `gep_query_outcomes` | Search, filter, and retrieve past GEP outcome logs. Use this to dive deeper into historical successes or failures beyond the default 3 entries injected at session start. |
+| `gep_get_workspace_state` | Retrieve the overall evolution statistics and maturity level of this repository workspace. |
+| `gep_get_outcome` | Load the exact detail and full JSON parameters of a specific historical evolution event. |
+
+When the user asks you to "recall more history", "analyze past evolution trends", or "check GEP workspace metrics", always call these `gep_*` MCP tools directly to read from the shared graph database.
+
