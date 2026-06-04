@@ -1,6 +1,6 @@
 {
   "name": "evolver-antigravity-plugin",
-  "description": "Official EvoMap marketplace for the Evolver Antigravity plugin — persistent, auditable self-evolution memory for the agent, powered by the Genome Evolution Protocol (GEP).",
+  "description": "Local/plugin-catalog metadata for the Evolver Antigravity plugin — persistent, auditable self-evolution memory for the agent, powered by the Genome Evolution Protocol (GEP).",
   "owner": {
     "name": "EvoMap",
     "email": "team@evomap.ai",

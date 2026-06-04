@@ -43,9 +43,39 @@ function looksLikeDir(candidate) {
  *   4. AGY_PROJECT_DIR           (Agy SDK project dir, if set)
  *   5. ANTIGRAVITY_WORKSPACE     (Antigravity Desktop workspace, if set)
  *   6. AGY_WORKSPACE             (Agy SDK workspace, if set)
- *   7. the process working directory
+ *   7. toolCall.args.Cwd        (Antigravity tool payload, if set)
+ *   8. workspacePaths[0]        (Antigravity common hook payload, if set)
+ *   9. the process working directory
  */
-function resolveProjectDir() {
+function firstWorkspacePath(input) {
+  if (!input || typeof input !== 'object') {
+    return '';
+  }
+  if (Array.isArray(input.workspacePaths)) {
+    for (const candidate of input.workspacePaths) {
+      if (looksLikeDir(candidate)) {
+        return candidate;
+      }
+    }
+  }
+  return '';
+}
+
+function toolCallCwd(input) {
+  if (!input || typeof input !== 'object') {
+    return '';
+  }
+  const args =
+    input.toolCall && typeof input.toolCall === 'object'
+      ? input.toolCall.args
+      : null;
+  if (args && looksLikeDir(args.Cwd)) {
+    return args.Cwd;
+  }
+  return '';
+}
+
+function resolveProjectDir(input) {
   const fromCursor = process.env.CURSOR_PROJECT_DIR;
   if (looksLikeDir(fromCursor)) {
     return fromCursor;
@@ -61,6 +91,14 @@ function resolveProjectDir() {
   const fromAntigravityWorkspace = process.env.ANTIGRAVITY_WORKSPACE || process.env.AGY_WORKSPACE;
   if (looksLikeDir(fromAntigravityWorkspace)) {
     return fromAntigravityWorkspace;
+  }
+  const fromToolCall = toolCallCwd(input);
+  if (looksLikeDir(fromToolCall)) {
+    return fromToolCall;
+  }
+  const fromWorkspacePaths = firstWorkspacePath(input);
+  if (looksLikeDir(fromWorkspacePaths)) {
+    return fromWorkspacePaths;
   }
   return process.cwd();
 }
@@ -334,6 +372,7 @@ function resolveWorkspaceId(projectDir) {
 
 module.exports = {
   resolveProjectDir,
+  firstWorkspacePath,
   isGitWorkspace,
   findMemoryGraph,
   resolveWorkspaceId,

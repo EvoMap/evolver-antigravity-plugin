@@ -188,7 +188,7 @@ function finish(projectDir, diff) {
       ? 'no changes detected this session'
       : 'not a git workspace';
     appendEvolutionLog(`[Evolution] Session end: nothing recorded (${reason}).`);
-    emit({});
+    emit({ decision: '' });
     return;
   }
 
@@ -239,13 +239,22 @@ function finish(projectDir, diff) {
   }
   const receipt = `[Evolution] Session outcome recorded to ${destination}: ${summary}`;
   appendEvolutionLog(receipt);
-  emit({ systemMessage: receipt });
+  emit({ decision: '' });
+}
+
+function parseInput(raw) {
+  try {
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (_err) {
+    return {};
+  }
 }
 
 // Drain stdin (we don't use it) with a watchdog, then do the work.
 (function run() {
   try {
-    const projectDir = resolveProjectDir();
+    let buffer = '';
     let done = false;
 
     const proceed = () => {
@@ -254,6 +263,7 @@ function finish(projectDir, diff) {
       }
       done = true;
       try {
+        const projectDir = resolveProjectDir(parseInput(buffer));
         const diff = collectDiff(projectDir);
         finish(projectDir, diff);
       } catch (_err) {
@@ -269,7 +279,10 @@ function finish(projectDir, diff) {
       watchdog.unref();
     }
 
-    process.stdin.on('data', () => {});
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => {
+      buffer += chunk;
+    });
     process.stdin.on('end', () => {
       clearTimeout(watchdog);
       proceed();

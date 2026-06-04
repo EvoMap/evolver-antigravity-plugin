@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 EvoMap
 //
-// Antigravity hook: SessionStart.
+// Antigravity hook: PreInvocation.
 // Surfaces recent, workspace-scoped evolution memory (and a one-time notice if
 // the folder isn't a git repo) to the agent as additional context.
 //
@@ -219,9 +219,18 @@ function formatSummary(outcomes) {
   );
 }
 
-function main() {
+function parseInput(raw) {
+  try {
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (_err) {
+    return {};
+  }
+}
+
+function main(input) {
   const parts = [];
-  const currentDir = resolveProjectDir();
+  const currentDir = resolveProjectDir(input);
 
   // 1. Non-git notice (throttled per directory).
   try {
@@ -253,14 +262,10 @@ function main() {
   }
 
   const joined = parts.join('\n\n');
-  // Antigravity SessionStart contract: additionalContext is injected into the
-  // session. Emit both the top-level field and the hookSpecificOutput form.
+  // Antigravity PreInvocation contract: inject an ephemeral message before the
+  // model is called.
   emit({
-    additionalContext: joined,
-    hookSpecificOutput: {
-      hookEventName: 'SessionStart',
-      additionalContext: joined,
-    },
+    injectSteps: [{ ephemeralMessage: joined }],
   });
 }
 
@@ -268,13 +273,14 @@ function main() {
 (function run() {
   try {
     let started = false;
+    let buffer = '';
     const start = () => {
       if (started) {
         return;
       }
       started = true;
       try {
-        main();
+        main(parseInput(buffer));
       } catch (_err) {
         emit({});
       }
@@ -285,8 +291,10 @@ function main() {
       watchdog.unref();
     }
 
-    // Consume stdin without blocking; we don't actually use its contents.
-    process.stdin.on('data', () => {});
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => {
+      buffer += chunk;
+    });
     process.stdin.on('end', () => {
       clearTimeout(watchdog);
       start();

@@ -8,7 +8,7 @@ Give the Antigravity Desktop agent a **persistent, auditable evolution memory**.
 
 Powered by the [Genome Evolution Protocol (GEP)](https://evomap.ai) and the [`@evomap/evolver`](https://github.com/EvoMap/evolver) engine. 
 
-> **Status:** v0.1.0 — Native Antigravity port. Zero-Config Built-in MCP & Hooks. Fully compatible with standalone local memory graphs.
+> **Status:** v0.1.0 — Native Antigravity port. Zero-Config MCP & Hooks. Fully compatible with standalone local memory graphs.
 
 ---
 
@@ -20,8 +20,8 @@ Three lifecycle hooks run automatically on events and require no configuration o
 
 | Hook | Event | Effect |
 |---|---|---|
-| `session-start.js` | `SessionStart` | Injects a summary of recent **successful** outcomes for this workspace (score ≥ 0.5, < 7 days, max 3) as session context. |
-| `signal-detect.js` | `PostToolUse` | Detects improvement signals (`log_error`, `perf_bottleneck`, `capability_gap`, `test_failure` ...) in tool outputs or edits. |
+| `session-start.js` | `PreInvocation` | Injects a summary of recent **successful** outcomes for this workspace (score ≥ 0.5, < 7 days, max 3) as an ephemeral model context step. |
+| `signal-detect.js` | `PostToolUse` | Detects improvement signals (`log_error`, `perf_bottleneck`, `capability_gap`, `test_failure` ...) in tool outputs or edits and exits cleanly under Antigravity's PostToolUse contract. |
 | `session-end.js` | `Stop` | Classifies the session's git diff and appends the outcome to the evolution memory graph. |
 
 ### 2. Built-in GEP MCP Server (Exclusive to Antigravity Port)
@@ -48,8 +48,13 @@ Original Claude Code slash commands are mapped directly into discoverable **Agen
 
 ## Installation
 
-### From the Antigravity Plugin Market
-Search for **Evolver** or **evolver-antigravity-plugin** under the **AI** category and click **Install**.
+### Antigravity Plugin Availability
+Antigravity currently supports local plugin bundles and Google-curated "Build with Google" bundles. There is no documented public third-party Antigravity plugin marketplace submission flow for this package yet.
+
+For CLI installs, use Antigravity's local plugin command:
+```bash
+agy plugin install /path/to/evolver-antigravity-plugin
+```
 
 ### Sideloading (Local Development)
 1. Clone or download this directory into your scratch workspace:
@@ -61,6 +66,13 @@ Search for **Evolver** or **evolver-antigravity-plugin** under the **AI** catego
    ln -s ~/.gemini/antigravity/scratch/evolver-antigravity-plugin ~/.gemini/config/plugins/evolver-antigravity-plugin
    ```
 3. Restart or refresh Antigravity Desktop.
+
+If `~/.gemini/config/mcp_config.json` exists, it must contain valid JSON, for example:
+```json
+{
+  "mcpServers": {}
+}
+```
 
 ---
 
