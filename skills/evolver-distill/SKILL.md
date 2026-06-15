@@ -11,7 +11,9 @@ Distill a reusable, generalized skill or gene from recent run history or a respo
 
 When requested, follow these steps:
 
-1. **Resolve CLI and execute**:
+1. **Prefer the Proxy conversation distiller when available** — if `evolver_distill_conversation` is in the MCP tool list and the reusable lesson came from the current conversation, call it first with a concrete summary, signals, strategy steps, artifacts, and validation evidence. The Proxy applies the quality gate, writes the Gene/Capsule locally, and queues Hub publishing when configured.
+
+2. **Resolve CLI and execute as a fallback or for existing history**:
    
    ```bash
    EVOLVER="evolver"
@@ -24,7 +26,7 @@ When requested, follow these steps:
    $EVOLVER distill
    ```
 
-2. **Report and explain** — summarize what was distilled:
+3. **Report and explain** — summarize what was distilled:
    - What candidate skill or gene was created?
    - What signals does it generalize?
 

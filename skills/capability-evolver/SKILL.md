@@ -64,3 +64,16 @@ You should proactively use these MCP tools in your workflow:
 
 When the user asks you to "recall more history", "analyze past evolution trends", or "check GEP workspace metrics", always call these `gep_*` MCP tools directly to read from the shared graph database.
 
+## Local Evolver Proxy Tools
+
+This plugin also registers an `evolver-proxy` MCP bridge when the local Proxy is running. Use it for cross-workspace EvoMap network actions:
+
+| MCP Tool | Purpose / Action |
+|---|---|
+| `evolver_status` | Check Proxy health, node identity, pending mailbox counts, Hub sync status, and auth/sync diagnostics. |
+| `evolver_search_assets` | Search reusable Genes and Capsules before substantial work. |
+| `evolver_fetch_asset` | Load full Gene/Capsule content returned by search. |
+| `evolver_publish_asset` | Queue explicit Gene/Capsule submissions for Hub review. |
+| `evolver_distill_conversation` | Distill a high-signal Antigravity conversation into a gated Gene/Capsule. Use this when the session produced a reusable workflow, debugging pattern, or visual/interaction capability worth sharing. |
+
+Do not distill every chat turn. Call `evolver_distill_conversation` only when the capability is concrete, reusable, and backed by artifacts or validation.
