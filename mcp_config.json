@@ -10,6 +10,16 @@
         "EVOMAP_HUB_URL": "",
         "EVOMAP_API_KEY": ""
       }
+    },
+    "evolver-proxy": {
+      "command": "node",
+      "args": [
+        "mcp/evolver-proxy.mjs"
+      ],
+      "env": {
+        "EVOMAP_PROXY_PORT": "19820",
+        "A2A_HUB_URL": "https://evomap.ai"
+      }
     }
   }
 }

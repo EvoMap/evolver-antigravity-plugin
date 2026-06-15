@@ -32,6 +32,8 @@ Through [mcp_config.json](mcp_config.json), the plugin automatically provisions 
 - **Interactive query capabilities**: The agent can search past memory charts on-the-fly using `gep_query_outcomes`.
 - **Maturity monitoring**: Check overall workspace evolution status with `gep_get_workspace_state`.
 
+The same config also registers the local **Evolver Proxy bridge** (`mcp/evolver-proxy.mjs`) when a Proxy is running. This exposes `evolver_status`, asset search/fetch/publish tools, and `evolver_distill_conversation` so Antigravity can turn a high-signal conversation into a gated Gene/Capsule without waiting for a manual CLI distill step.
+
 ### 3. Native Agent Skills
 
 Original Claude Code slash commands are mapped directly into discoverable **Agent Skills** (located under `skills/`):
