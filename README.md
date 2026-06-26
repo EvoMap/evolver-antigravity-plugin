@@ -22,7 +22,7 @@ Three lifecycle hooks run automatically on events and require no configuration o
 |---|---|---|
 | `session-start.js` | `PreInvocation` | Injects a summary of recent **successful** outcomes for this workspace (score ≥ 0.5, < 7 days, max 3) as an ephemeral model context step. |
 | `signal-detect.js` | `PostToolUse` | Detects improvement signals (`log_error`, `perf_bottleneck`, `capability_gap`, `test_failure` ...) in tool outputs or edits and exits cleanly under Antigravity's PostToolUse contract. |
-| `session-end.js` | `Stop` | Classifies the session's git diff and appends the outcome to the evolution memory graph. |
+| `session-end.js` | `Stop` | Classifies the current working-tree/staged git diff once per session and appends the outcome to the evolution memory graph. |
 
 ### 2. Built-in GEP MCP Server (Exclusive to Antigravity Port)
 
@@ -107,7 +107,7 @@ export EVOMAP_HUB_URL="https://evomap.ai"
 export EVOMAP_API_KEY="your-api-key"
 export EVOMAP_NODE_ID="your-node-id"
 ```
-The hooks will safely write to the Hub with a fallback to local memory if the server is unreachable.
+The hooks will safely write to the Hub with a fallback to local memory if the server is unreachable. Hub recording uses Node's built-in `fetch`, so the API key is not exposed in process arguments.
 
 ---
 
