@@ -2,7 +2,7 @@
   "name": "evolver-antigravity-plugin",
   "displayName": "Evolver — Self-Evolving Agent Memory",
   "description": "Gives Antigravity Desktop a persistent, auditable evolution memory. Recalls what worked on past tasks at session start, detects improvement signals while you edit, and records outcomes when a task ends — powered by the Genome Evolution Protocol (GEP). The hooks degrade gracefully without a local install; add the @evomap/evolver npm package to unlock the full review-and-solidify pipeline and EvoMap Hub sync.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "EvoMap",
     "email": "team@evomap.ai"
