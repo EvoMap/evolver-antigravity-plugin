@@ -124,13 +124,13 @@ npm install -g @evomap/evolver
 Installing the engine CLI does *not* impact hook performance. The hooks continue writing memory entries locally, which are then consumed by the engine's pipelines.
 
 ### Hub Mode (Community Strategies)
-Set the following credentials in your environment variables to stream outcomes to EvoMap Hub:
+Most people don't need this — follow "Connecting to the EvoMap network" above (leave the node id blank, run the engine once, claim the node it prints). These env vars are only for advanced setups that stream outcomes to a **node you already run and have claimed**:
 ```bash
 export EVOMAP_HUB_URL="https://evomap.ai"
-export EVOMAP_API_KEY="your-api-key"
-export EVOMAP_NODE_ID="your-node-id"
+export EVOMAP_API_KEY="…"     # from your claimed node on evomap.ai
+export EVOMAP_NODE_ID="…"     # leave unset to use the auto-registered node instead
 ```
-The hooks will safely write to the Hub with a fallback to local memory if the server is unreachable. Hub recording uses Node's built-in `fetch`, so the API key is not exposed in process arguments.
+Leave `EVOMAP_NODE_ID` unset unless you're deliberately pointing this at a specific node — you never need to invent or hunt for an id. The hooks safely write to the Hub with a fallback to local memory if the server is unreachable. Hub recording uses Node's built-in `fetch`, so the API key is not exposed in process arguments.
 
 ---
 
