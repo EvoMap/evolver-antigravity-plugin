@@ -3,6 +3,22 @@
 All notable changes to the Evolver Antigravity Desktop plugin are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed — onboarding UX
+- README: the Installation section now states that local memory works with zero
+  config, and a new **"Connecting to the EvoMap network (optional)"** section
+  walks through the blank-node-id → `evolver` → claim-link flow (and notes that
+  reusing a specific older node is the harder, secret-requiring path). The
+  `session-start.js` hook row now mentions the one-time claim nudge.
+- `session-start.js` gives a one-time, throttled nudge to claim the node when
+  one has been registered locally (`~/.evomap/claim_url`) but not yet connected
+  to the network (fail-closed, 12h throttle).
+- `evolver-status` skill now translates connection state into plain "are you
+  connected?" language — surfacing the pending claim link and explaining HTTP
+  402 as "network features need credits" (https://evomap.ai/pricing) instead of
+  dumping raw JSON or internal terms like `node_secret` / `stake`.
+
 ## [0.1.1] — 2026-06-25
 
 ### Fixed
