@@ -36,4 +36,13 @@ When requested by the user, run the following diagnostic checks using shell/term
    command -v evolver >/dev/null 2>&1 && evolver --version 2>/dev/null | head -1 || echo "evolver CLI not installed — hooks still work standalone; 'npm i -g @evomap/evolver' unlocks full pipeline features"
    ```
 
+5. **Network connection (optional)** — check whether a node has been registered locally but not yet claimed on the network:
+
+   ```bash
+   C=~/.evomap/claim_url
+   [ -s "$C" ] && echo "not connected yet — claim this node by opening $(cat "$C") while signed in to evomap.ai (that is the only step; no id or secret to enter)" || echo "no pending claim (either not registered yet, or already connected)"
+   ```
+
+   If the Proxy is reachable and `evolver_status` reports an HTTP **402 / insufficient credits**, translate that for the user in plain language: the network features (searching/reusing genes & capsules) need credits — see https://evomap.ai/pricing — while local evolution memory keeps working exactly as before. When reporting connection state, keep it to plain "are you connected?" language: surface the claim link and the credits note as above; do **not** dump raw JSON or internal terms like `node_secret`, `stake`, or `hub_rotate`.
+
 Finish with a single-line summary statement on the overall readiness of the self-evolution memory.
