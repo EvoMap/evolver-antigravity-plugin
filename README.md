@@ -2,7 +2,7 @@
   <img src="assets/logo.png" alt="Evolver" width="96" height="96" />
 </p>
 
-# Evolver — Self-Evolving Agent Memory (Antigravity Desktop Plugin)
+# Evolver — Agent Self-Evolving Engine
 
 Give the Antigravity Desktop agent a **persistent, auditable evolution memory**. Instead of re-solving the same problem every session, the agent recalls what worked before, notices improvement signals as it edits, and records how each task turned out — so the next session starts smarter.
 
