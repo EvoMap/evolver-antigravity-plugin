@@ -71,7 +71,9 @@ This plugin also registers an `evolver-proxy` MCP bridge when the local Proxy is
 | MCP Tool | Purpose / Action |
 |---|---|
 | `evolver_status` | Check Proxy health, node identity, pending mailbox counts, Hub sync status, and auth/sync diagnostics. |
-| `evolver_search_assets` | Search reusable Genes and Capsules before substantial work. |
+| `evolver_recipe_search` | Default first step: search Hub Recipes (ordered Gene/Capsule DNA). |
+| `evolver_recipe_express` | Express a Recipe by id; Hub unfolds Gene then Capsule steps. |
+| `evolver_search_assets` | Fallback: search Genes and Capsules when no Recipe matches. |
 | `evolver_fetch_asset` | Load full Gene/Capsule content returned by search. |
 | `evolver_publish_asset` | Queue explicit Gene/Capsule submissions for Hub review. |
 | `evolver_distill_conversation` | Distill a high-signal Antigravity conversation into a gated Gene/Capsule. Use this when the session produced a reusable workflow, debugging pattern, or visual/interaction capability worth sharing. |
