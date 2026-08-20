@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- MCP bridge is Recipe-first: `evolver_recipe_search` then `evolver_recipe_express`
+  against Proxy `/recipe/search` and `/recipe/express`. `evolver_search_assets`
+  remains as Gene/Capsule fallback when no Recipe hits.
+
 ### Changed — onboarding UX
 - README: the Installation section now states that local memory works with zero
   config, and a new **"Connecting to the EvoMap network (optional)"** section
