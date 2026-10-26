@@ -147,7 +147,7 @@ test('every hook answers the JSON its event requires: a decision for PreToolUse 
   assert.deepEqual(await s.stop('done'), { decision: 'stop' });
 });
 
-test('the turn end reports the strategy with the turn\'s own evidence and leaves no candidate for a reused one', async () => {
+test('the turn end reports the strategy as used with the turn\'s own evidence, and the turn that reused it is still a candidate', async () => {
   await startSandbox();
   const s = session('s-lru');
   await lruTurn(s);
@@ -157,10 +157,10 @@ test('the turn end reports the strategy with the turn\'s own evidence and leaves
     asset_id: ASSET_ID,
     outcome: 'success',
     task_id: 'antigravity:s-lru:1',
-    reason: 'Injected by Evolver into Antigravity turn 1; applied: used; last test passed after failing earlier.',
+    reason: 'Injected by Evolver into Antigravity turn 1; last test passed after failing earlier.',
     evidence: { tier: 'L1', applied: 'used', check: { kind: 'test', passed: true, fail_then_pass: true }, aborted: false, stage: 'immediate' },
   });
-  assert.deepEqual(candidates(), {}, 'asset_reused');
+  assert.equal(candidates()['s-lru'].prompt, LRU_PROMPT, 'a reused strategy is no reason to skip distillation');
 });
 
 test('without a check the turn end reason decides: cut short, failed and cancelled turns are no success', async () => {
@@ -303,7 +303,7 @@ test("a killed session's open strategies are reported aborted at the next sessio
   const [report] = await waitFor(reuseReports);
   assert.equal(report.asset_id, 'sha256:orphan');
   assert.equal(report.task_id, 'antigravity:s-killed:4');
-  assert.deepEqual(report.evidence, { tier: 'none', applied: 'partial', aborted: true, stage: 'immediate' });
+  assert.deepEqual(report.evidence, { tier: 'none', applied: 'used', aborted: true, stage: 'immediate' });
 });
 
 test('without a SessionStart, the first model call of a conversation under a new process starts the session', async () => {
@@ -335,8 +335,8 @@ test('when Antigravity exits mid-turn, the session\'s open strategy is reported 
     asset_id: ASSET_ID,
     outcome: 'failed',
     task_id: 'antigravity:s-quit:1',
-    reason: 'Injected by Evolver into Antigravity turn 1; applied: unknown; no check ran.',
-    evidence: { tier: 'none', applied: 'partial', aborted: true, stage: 'immediate' },
+    reason: 'Injected by Evolver into Antigravity turn 1; no check ran.',
+    evidence: { tier: 'none', applied: 'used', aborted: true, stage: 'immediate' },
   });
 });
 
@@ -368,6 +368,19 @@ test('when Antigravity exits, the candidate is distilled once by agy run headles
   assert.match(call.cwd, /evolver-distill-/);
   assert.match(call.prompt, /## Task\nadd a retry to the uploader/);
   assert.equal(proxy.of('/conversation/distill').length, 1);
+});
+
+test('a verified turn that reused an injected strategy is distilled like any other', async () => {
+  await startSandbox();
+  const host = startHost();
+  const s = session('s-reused', { host });
+  await s.start();
+  await lruTurn(s);
+  await waitFor(reuseReports);
+  await host.kill();
+  const [body] = await waitFor(() => proxy.of('/conversation/distill'), AFTER_EXIT_MS);
+  assert.equal(body.user_prompt, LRU_PROMPT);
+  assert.equal(body.final_answer, 'LRU 缓存写好了，测试通过。');
 });
 
 test('a resumed conversation keeps counting turns after Antigravity exits, so task ids never repeat, with or without SessionStart', async () => {

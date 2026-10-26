@@ -25,7 +25,7 @@ conversation's transcript, so the plugin reads those from `transcriptPath`.
 | `SessionStart` (or the first model call of a conversation under a new Antigravity process: CLI 1.3.x runs no `SessionStart`, and the App runs none for a conversation it reopens) | Reports the previous session's kept or reverted edits (retention) and the open strategies of a session whose Antigravity process is gone (aborted), starts Evolver if it is missing or too old, and distills leftover candidates — all in a detached background worker that then waits for this session's Antigravity process to exit. Adds no context, except a one-off notice when it installed, upgraded or could not start Evolver. |
 | `PreInvocation` | Runs before every model call. The first call after a new prompt of yours in the transcript opens a turn: it closes a turn that got no `Stop` as one that ended on an error, labels the previous turn's reuse from this prompt (correction or praise) and drops its candidate on a correction, recalls by the prompt text (`POST /asset/fetch {text}` on the local Proxy) and injects the best strategy as an `ephemeralMessage` step. An ephemeral message lasts one model call, so the same strategy is injected again before each later call of the turn; it is recalled once. |
 | `PreToolUse` (`write_to_file`, `replace_file_content`, `multi_replace_file_content`) | Hashes the file an edit is about to change, for the retention report. Answers `{"decision":"allow"}`, which hands the call on to your permission settings unchanged. |
-| `Stop` | Reads the turn from the transcript — commands, checks (test, build, lint, type check) with their exit codes, touched paths, the code its edits added, the final answer — reports every strategy injected into the turn, and makes the turn the session's distillation candidate when it ended verified. A turn that runs again without a new prompt (a background command finished, another hook continued it) re-judges the candidate on the whole turn; its reports have already gone out. Answers `{"decision":"stop"}`. |
+| `Stop` | Reads the turn from the transcript — commands, checks (test, build, lint, type check) with their exit codes, touched paths, the files its edits changed, the final answer — reports every strategy injected into the turn, and makes the turn the session's distillation candidate when it ended verified. A turn that runs again without a new prompt (a background command finished, another hook continued it) re-judges the candidate on the whole turn; its reports have already gone out. Answers `{"decision":"stop"}`. |
 
 **Session end.** With no session-end event, a session counts as over once its Antigravity process is gone. The
 worker the session start leaves behind polls that process every two seconds; when it exits (you quit the CLI or the
@@ -90,9 +90,10 @@ node <plugin folder>/scripts/evolver.mjs <command> [arguments]
 
 ## Session-end distillation
 
-A turn that ended completed, used tools, passed its last check and reused no injected strategy leaves a candidate in
+A turn that ended completed, used tools and passed its last check leaves a candidate in
 `~/.evolver/state/antigravity-distill-pending.json`; a later verified turn replaces it, and a next prompt that reads
-as a correction drops it (a distillation already running sees that and stops). When the session ends, a detached
+as a correction drops it (a distillation already running sees that and stops). A turn that reused an injected
+strategy is a candidate too: the engine's Gene intake drops a Gene that repeats one it already has. When the session ends, a detached
 worker runs Antigravity itself headless on the session's model —
 `agy --input-format stream-json --output-format stream-json --disable-slash-commands --model <modelName>` with the
 prompt on stdin as one `user` event, in an empty temporary directory — to write a Gene from a digest of that turn
@@ -123,15 +124,13 @@ Every strategy injected into a turn is reported through the Proxy's `POST /asset
 
 | Report | When | `task_id` | `evidence` |
 |---|---|---|---|
-| Turn end | `Stop`, or the next prompt after a turn that got no `Stop` | `antigravity:<conversation>:<turn>` | `tier` `L1` when the turn ran a test, build, lint or type check, else `none`; `applied`; `check` `{kind, passed, fail_then_pass}` of the last check; `aborted`; `stage: immediate` |
-| Correction | the next prompt says the answer did not hold, or approves it | `…:correction` | `tier: L3`, `applied`, `stage: correction` |
-| Retention | the next session in the same project finds the turn's edits kept or reverted | `…:retention` | `tier: L2`, `applied`, `stage: retention` |
-| Aborted | Antigravity exits, or is killed, before the turn ends (reported by the exit worker, or by the next session start) | `antigravity:<conversation>:<turn>` | `tier: none`, `applied: partial`, `aborted: true`, `stage: immediate` |
+| Turn end | `Stop`, or the next prompt after a turn that got no `Stop` | `antigravity:<conversation>:<turn>` | `tier` `L1` when the turn ran a test, build, lint or type check, else `none`; `applied: used`; `check` `{kind, passed, fail_then_pass}` of the last check; `aborted`; `stage: immediate` |
+| Correction | the next prompt says the answer did not hold, or approves it | `…:correction` | `tier: L3`, `applied: used`, `stage: correction` |
+| Retention | the next session in the same project finds the turn's edits kept or reverted | `…:retention` | `tier: L2`, `applied: used`, `stage: retention` |
+| Aborted | Antigravity exits, or is killed, before the turn ends (reported by the exit worker, or by the next session start) | `antigravity:<conversation>:<turn>` | `tier: none`, `applied: used`, `aborted: true`, `stage: immediate` |
 
-- **`applied`** compares the strategy's numbered steps with the turn's shell commands, touched paths, the code its
-  edits added (200,000 characters a turn) and the final answer: `used` when half the steps show up, `partial` when
-  fewer do, `unused` when none do. A turn that left nothing to compare is sent as tier `none` with
-  `applied: partial`, and its reason says `applied: unknown`.
+- **`applied`** is always `used`: the model follows what is injected into its turn. Whether the strategy helped is
+  judged by the outcome (the last check, or how the turn ended), the next prompt and whether the edits were kept.
 - **Checks** are `run_command` calls that run tests, builds, linters or type checkers. Hooks get no exit code;
   Antigravity writes it into the command's result step in the transcript (`The command exited with code 2.`), and
   the plugin reads it there. A result with no exit code is judged by its output; a command whose result step has
@@ -141,7 +140,7 @@ Every strategy injected into a turn is reported through the Proxy's `POST /asset
 - **Delivery.** Reports wait in `~/.evolver/state/antigravity-reports-outbox.json` and are retried by the background
   worker at every turn end, follow-up prompt and session start for 8 days. One the Hub refuses as invalid is
   settled as rejected and never resent. Reports with evidence are also written once to the local root event log.
-- Reasons name the turn, the applied verdict and the check kind, never the prompt, a command or code, and the
+- Reasons name the turn and the check kind, never the prompt, a command or code, and the
   prompt loses keys and tokens before recall sends it.
 
 ## Develop

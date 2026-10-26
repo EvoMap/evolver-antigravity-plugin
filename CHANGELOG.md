@@ -27,12 +27,15 @@ Aligned with the DeepSeek Harness plugin (dsh-evolver 0.3.0): Evolver stays out 
   aborted and distills its candidate; the next session start does the same for one it missed.
 - Follow-up correction/praise reports, retention reports, a report outbox with retries, and local root-event
   records through the installed Evolver's core.
-- Session-end distillation: a verified turn that reused no strategy becomes the session's candidate
+- Session-end distillation: a verified turn becomes the session's candidate (one that reused an injected strategy
+  too; the engine's intake drops a repeated Gene)
   (`~/.evolver/state/antigravity-distill-pending.json`), dropped by a correction, and is distilled once by
   Antigravity itself, headless (`agy --input-format stream-json --output-format stream-json
   --disable-slash-commands --model <session model>`, empty workspace, `EVOLVER_ANTIGRAVITY_HEADLESS=1` keeping this
   plugin's hooks out of the run), then sent to `POST /conversation/distill` with `platform: 'antigravity'`. Three
   tries; leftovers of ended sessions are claimed by the next session start. State writes go through a shared lock.
+- Every reuse report says `applied: used` (dsh-evolver#55): an injected strategy counts as used, and the outcome,
+  the next prompt and kept edits judge whether it helped. The turn-end report is `L1` whenever a check ran.
 - Turn counters survive the session, so a resumed conversation never repeats a task id.
 - `scripts/evolver.mjs` with `status`, `search`, `distill`, `evolve`, `sync`, `review`, `run`, `solidify`, run by the
   person in a terminal (an Antigravity plugin's commands are skills, which cannot be kept out of the context).

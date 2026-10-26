@@ -50,7 +50,7 @@ test('a compaction that rewrites the transcript opens no turn, and the turn\'s s
   assert.equal(newUserInput(transcript.file, mark), null, 'a file that shrank below the mark');
 });
 
-test('a turn record pairs each call with its result: commands, checks, touched paths, applied edits and the answer', (t) => {
+test('a turn record pairs each call with its result: commands, checks, touched paths, edited files and the answer', (t) => {
   const transcript = scratchTranscript(t);
   transcript.prompt('add an LRU cache');
   const { mark } = newUserInput(transcript.file);
@@ -71,7 +71,7 @@ test('a turn record pairs each call with its result: commands, checks, touched p
   assert.deepEqual(record.commands, ['npm test', 'npm test 2>&1 | tail -5']);
   assert.deepEqual(record.checks, [{ command: 'npm test', failed: true }, { command: 'npm test 2>&1 | tail -5', failed: false }]);
   assert.deepEqual(record.paths, ['/w/src/index.js', '/w/src/lru.js', '/w/src/index.js']);
-  assert.deepEqual(record.edits, ['export class Lru {}'], 'the failed replacement added nothing');
+  assert.deepEqual(record.edits, ['/w/src/lru.js'], 'the failed replacement edited nothing');
   assert.equal(record.answer, 'The cache is in place and npm test passes.');
 });
 
