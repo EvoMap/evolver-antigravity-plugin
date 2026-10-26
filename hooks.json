@@ -3,14 +3,14 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "for d in \"$PWD\" \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/lib/agy-headless.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/session-start.mjs\"; done; echo '{}'",
+        "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/session-start.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/session-start.mjs\"; done; echo '{}'",
         "timeout": 10
       }
     ],
     "PreInvocation": [
       {
         "type": "command",
-        "command": "for d in \"$PWD\" \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/lib/agy-headless.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/pre-invocation.mjs\"; done; echo '{}'",
+        "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/pre-invocation.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/pre-invocation.mjs\"; done; echo '{}'",
         "timeout": 10
       }
     ],
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "for d in \"$PWD\" \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/lib/agy-headless.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/pre-tool-use.mjs\"; done; echo '{\"decision\":\"allow\"}'",
+            "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/pre-tool-use.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/pre-tool-use.mjs\"; done; echo '{\"decision\":\"allow\"}'",
             "timeout": 5
           }
         ]
@@ -29,7 +29,7 @@
     "Stop": [
       {
         "type": "command",
-        "command": "for d in \"$PWD\" \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/lib/agy-headless.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/stop.mjs\"; done; echo '{\"decision\":\"stop\"}'",
+        "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/stop.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/stop.mjs\"; done; echo '{\"decision\":\"stop\"}'",
         "timeout": 10
       }
     ]

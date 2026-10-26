@@ -4,13 +4,13 @@ import { AGY_OPTION, DISTILL_TASK, DRAIN_TASK, ENGINE_TASK, OWNER_OPTION, WATCH_
 import { DISTILL_TIMEOUT_MS, distillLeftovers } from '../lib/distiller.mjs';
 import { setUpEngine } from '../lib/engine-job.mjs';
 import { engineRuntime } from '../lib/engine-runtime.mjs';
-import { takeOrphanedUnreported } from '../lib/injected-assets.mjs';
+import { reportOrphaned } from '../lib/injected-assets.mjs';
 import { recordReuseLocally } from '../lib/local-ledger.mjs';
 import { afterOwnerExits } from '../lib/owner-watch.mjs';
 import { createProxyClient } from '../lib/proxy.mjs';
-import { drainOutbox, queueReports } from '../lib/report-queue.mjs';
+import { drainOutbox } from '../lib/report-queue.mjs';
 import { pruneOldSessions } from '../lib/session-state.mjs';
-import { abortedReports } from '../lib/turn-end.mjs';
+import { queueAbortedReports } from '../lib/turn-end.mjs';
 
 async function ranCleanly(work) {
   try {
@@ -34,7 +34,7 @@ const distill = () => distillLeftovers({
   runModel: agyModelRunner({ executable: optionOf(argv, AGY_OPTION) ?? 'agy' }),
 });
 const endSessionsOfGoneOwner = async () => {
-  queueReports(abortedReports(takeOrphanedUnreported()));
+  reportOrphaned(queueAbortedReports);
   await drain();
   await distill();
 };

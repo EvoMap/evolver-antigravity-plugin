@@ -183,6 +183,20 @@ test('without a check the turn end reason decides: cut short, failed and cancell
   }
 });
 
+test('a Stop whose reason is unknown settles nothing; a later Stop with a known reason closes the turn', async () => {
+  await startSandbox();
+  const s = session('s-unknown');
+  await s.prompt(LRU_PROMPT);
+  await s.stop('pausing', { reason: 'SOMETHING_NEW' });
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.deepEqual(reuseReports(), []);
+  s.command('node --test', PASSED_RUN);
+  await s.stop('done', { reason: 'model_stop' });
+  const [report] = await waitFor(reuseReports);
+  assert.equal(report.outcome, 'success');
+  assert.equal(report.evidence.tier, 'L1');
+});
+
 test('a correction in the next prompt sends an L3 follow-up under :correction', async () => {
   await startSandbox();
   const s = session('s-fix');

@@ -33,8 +33,10 @@ App), the worker reports the session's open strategies as aborted and distills i
 ran, the next session start does the same. The App hosts all its conversations in one language server, so there
 they end together when the App quits.
 
-**Turn end reasons.** `terminationReason` `model_stop` or `NO_TOOL_CALL` (sent by agy 1.2.9) is a completed turn,
-`max_steps_exceeded` a cut-short one, anything naming a cancel or interrupt an aborted one, anything else an error.
+**Turn end reasons.** `terminationReason` `model_stop` or `NO_TOOL_CALL` (sent by agy 1.2.7 and 1.2.9) is a
+completed turn, `max_steps_exceeded` a cut-short one, anything naming a cancel or interrupt an aborted one, and one
+naming an error (or a Stop carrying an `error`) a failed one. A Stop with any other reason settles nothing: a later
+Stop, or else the next prompt (as an error), closes the turn.
 
 ## Prerequisites
 
@@ -56,8 +58,9 @@ agy plugin install /path/to/evolver-antigravity-plugin
 The docs say the CLI stages plugins in `~/.gemini/antigravity-cli/plugins/<name>/` (agy 1.2.7 was seen copying to
 `~/.gemini/config/plugins/<name>/` instead). For the App and the IDE, copy or link the folder to
 `~/.gemini/config/plugins/evolver-antigravity-plugin`. Antigravity documents no variable for a plugin's own folder
-and no working directory for hooks, so each hook command looks for the plugin in its working directory, then in
-those two folders, and answers neutrally when it finds neither or no `node`.
+and no working directory for hooks, so each hook command runs the plugin from those two folders only — never from
+its working directory, which a project could fill with scripts of its own — and answers neutrally when it finds
+neither or no `node`. A plugin installed per workspace (`.agents/plugins/`) is not found.
 
 ## Configure
 

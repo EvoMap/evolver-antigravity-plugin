@@ -36,6 +36,8 @@ Aligned with the DeepSeek Harness plugin (dsh-evolver 0.3.0): Evolver stays out 
   tries; leftovers of ended sessions are claimed by the next session start. State writes go through a shared lock.
 - Every reuse report says `applied: used` (dsh-evolver#55): an injected strategy counts as used, and the outcome,
   the next prompt and kept edits judge whether it helped. The turn-end report is `L1` whenever a check ran.
+- A Stop with an unknown `terminationReason` leaves the turn open for a later Stop or the next prompt. Reports are
+  queued before their injections are marked reported, so a crash sends one twice rather than never.
 - Turn counters survive the session, so a resumed conversation never repeats a task id.
 - `scripts/evolver.mjs` with `status`, `search`, `distill`, `evolve`, `sync`, `review`, `run`, `solidify`, run by the
   person in a terminal (an Antigravity plugin's commands are skills, which cannot be kept out of the context).
@@ -49,8 +51,8 @@ Aligned with the DeepSeek Harness plugin (dsh-evolver 0.3.0): Evolver stays out 
 - The `PostToolUse` evolution-signal notice, the git-diff outcome recording at `Stop`, the claim nudge and the
   workspace id file (`.evolver/workspace-id`).
 - `marketplace.json`: Antigravity has no such file; plugins install from a folder or GitHub URL.
-- The `ANTIGRAVITY_PLUGIN_ROOT` variable in hook commands: Antigravity does not document it. Hooks look in their
-  working directory and both documented install folders.
+- The `ANTIGRAVITY_PLUGIN_ROOT` variable in hook commands: Antigravity does not document it. Hooks run the plugin
+  from the two documented install folders only, never from their working directory.
 
 ### Changed since 0.1.1 (the MCP parts are superseded by the removal above)
 - MCP bridge is Recipe-first: `evolver_recipe_search` then `evolver_recipe_express`
