@@ -5,12 +5,61 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
+## [0.2.0] - 2026-10-26
+
+Aligned with the DeepSeek Harness plugin (dsh-evolver 0.3.0): Evolver stays out of the model context.
+
+### Added
+- Antigravity hooks (`hooks.json`, one named hook with the documented events only) for the whole pipeline:
+  `PreInvocation` opens a turn on the first model call after a new prompt in the transcript and injects one
+  recalled strategy as an `ephemeralMessage` step, ending with `Apply them where they fit.`, again before each
+  later model call of the turn (an ephemeral message lasts one call); `PreToolUse` hashes
+  files before an edit and answers `{"decision":"allow"}`; `Stop` reads the turn from the transcript and reports
+  every injected strategy with the turn's evidence (`antigravity:<conversation>:<turn>`), mapping
+  `terminationReason` to completed, cut short, aborted or error; `SessionStart` sends retention reports and the
+  aborted reports of sessions whose Antigravity process is gone, and sets Evolver up in the background.
+  The first model call of a conversation under a new Antigravity process does the same when no `SessionStart`
+  ran (CLI 1.3.x has none; the App runs none for a reopened conversation).
+- Checks read their exit code from the command's result step in the transcript; a command moved to the background
+  counts as not run. Steps are read in `step_index` order.
+- Session end without a session-end event: the worker `SessionStart` starts waits for the session's Antigravity
+  process (the nearest `agy`/`language_server` ancestor) to exit, then reports the session's open strategies as
+  aborted and distills its candidate; the next session start does the same for one it missed.
+- Follow-up correction/praise reports, retention reports, a report outbox with retries, and local root-event
+  records through the installed Evolver's core.
+- Session-end distillation: a verified turn becomes the session's candidate (one that reused an injected strategy
+  too; the engine's intake drops a repeated Gene)
+  (`~/.evolver/state/antigravity-distill-pending.json`), dropped by a correction, and is distilled once by
+  Antigravity itself, headless (`agy --input-format stream-json --output-format stream-json
+  --disable-slash-commands --model <session model>`, empty workspace, `EVOLVER_ANTIGRAVITY_HEADLESS=1` keeping this
+  plugin's hooks out of the run), then sent to `POST /conversation/distill` with `platform: 'antigravity'`. Three
+  tries; leftovers of ended sessions are claimed by the next session start. State writes go through a shared lock.
+- Every reuse report says `applied: used` (dsh-evolver#55): an injected strategy counts as used, and the outcome,
+  the next prompt and kept edits judge whether it helped. The turn-end report is `L1` whenever a check ran.
+- A Stop with an unknown `terminationReason` leaves the turn open for a later Stop or the next prompt. Reports are
+  queued before their injections are marked reported, so a crash sends one twice rather than never.
+- Turn counters survive the session, so a resumed conversation never repeats a task id.
+- `scripts/evolver.mjs` with `status`, `search`, `distill`, `evolve`, `sync`, `review`, `run`, `solidify`, run by the
+  person in a terminal (an Antigravity plugin's commands are skills, which cannot be kept out of the context).
+- `npm test` (node --test) for the libraries and the hooks, including runs under a fake Antigravity host process.
+
+### Removed
+- The MCP servers (`mcp_config.json`, `mcp/evolver-proxy.mjs`, `@evomap/gep-mcp-server`) and every `evolver_*` and
+  `gep_*` tool.
+- The eight skills (`capability-evolver`, `evolver-*`): Antigravity cannot keep a plugin skill out of the context,
+  and dsh ships its skill off.
+- The `PostToolUse` evolution-signal notice, the git-diff outcome recording at `Stop`, the claim nudge and the
+  workspace id file (`.evolver/workspace-id`).
+- `marketplace.json`: Antigravity has no such file; plugins install from a folder or GitHub URL.
+- The `ANTIGRAVITY_PLUGIN_ROOT` variable in hook commands: Antigravity does not document it. Hooks run the plugin
+  from the two documented install folders only, never from their working directory.
+
+### Changed since 0.1.1 (the MCP parts are superseded by the removal above)
 - MCP bridge is Recipe-first: `evolver_recipe_search` then `evolver_recipe_express`
   against Proxy `/recipe/search` and `/recipe/express`. `evolver_search_assets`
   remains as Gene/Capsule fallback when no Recipe hits.
 
-### Changed — onboarding UX
+### Changed since 0.1.1 — onboarding UX
 - README: the Installation section now states that local memory works with zero
   config, and a new **"Connecting to the EvoMap network (optional)"** section
   walks through the blank-node-id → `evolver` → claim-link flow (and notes that

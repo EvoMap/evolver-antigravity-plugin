@@ -1,20 +1,27 @@
 {
   "evolver-antigravity-plugin": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/session-start.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/session-start.mjs\"; done; echo '{}'",
+        "timeout": 10
+      }
+    ],
     "PreInvocation": [
       {
         "type": "command",
-        "command": "PLUGIN_ROOT=\"${ANTIGRAVITY_PLUGIN_ROOT:-$HOME/.gemini/config/plugins/evolver-antigravity-plugin}\"; node \"$PLUGIN_ROOT/hooks/session-start.js\"",
-        "timeout": 5
+        "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/pre-invocation.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/pre-invocation.mjs\"; done; echo '{}'",
+        "timeout": 10
       }
     ],
-    "PostToolUse": [
+    "PreToolUse": [
       {
-        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "matcher": "^(write_to_file|replace_file_content|multi_replace_file_content)$",
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_ROOT=\"${ANTIGRAVITY_PLUGIN_ROOT:-$HOME/.gemini/config/plugins/evolver-antigravity-plugin}\"; node \"$PLUGIN_ROOT/hooks/signal-detect.js\"",
-            "timeout": 3
+            "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/pre-tool-use.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/pre-tool-use.mjs\"; done; echo '{\"decision\":\"allow\"}'",
+            "timeout": 5
           }
         ]
       }
@@ -22,7 +29,7 @@
     "Stop": [
       {
         "type": "command",
-        "command": "PLUGIN_ROOT=\"${ANTIGRAVITY_PLUGIN_ROOT:-$HOME/.gemini/config/plugins/evolver-antigravity-plugin}\"; node \"$PLUGIN_ROOT/hooks/session-end.js\"",
+        "command": "for d in \"$HOME/.gemini/antigravity-cli/plugins/evolver-antigravity-plugin\" \"$HOME/.gemini/config/plugins/evolver-antigravity-plugin\"; do [ -f \"$d/hooks/stop.mjs\" ] && command -v node >/dev/null && exec node \"$d/hooks/stop.mjs\"; done; echo '{\"decision\":\"stop\"}'",
         "timeout": 10
       }
     ]
